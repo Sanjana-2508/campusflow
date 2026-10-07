@@ -1,0 +1,93 @@
+[
+  {
+    "id": "B1",
+    "label": "B.S.Narayan Block",
+    "node_type": "BUILDING",
+    "latitude": 13.13398066669436,
+    "longitude": 77.5682143665105
+  },
+  {
+    "id": "B2",
+    "label": "Lab Block",
+    "node_type": "BUILDING",
+    "latitude": 13.134429049813699,
+    "longitude": 77.56810934041818
+  },
+  {
+    "id": "B3",
+    "label": "Academic Block",
+    "node_type": "BUILDING",
+    "latitude": 13.133375071876017,
+    "longitude": 77.56742105832481
+  },
+  {
+    "id": "B4",
+    "label": "BMSIT&M NCC Office",
+    "node_type": "BUILDING",
+    "latitude": 13.134143948553392,
+    "longitude": 77.56797908935525
+  },
+  {
+    "id": "B5",
+    "label": "BMSSA Library",
+    "node_type": "BUILDING",
+    "latitude": 13.13284351860961,
+    "longitude": 77.56765711245657
+  },
+  {
+    "id": "B6",
+    "label": "Bmsit canteen",
+    "node_type": "BUILDING",
+    "latitude": 13.13297020339768,
+    "longitude": 77.56754982410018
+  },
+  {
+    "id": "B7",
+    "label": "BMS School of Architecture",
+    "node_type": "BUILDING",
+    "latitude": 13.132509174927947,
+    "longitude": 77.56837460336904
+  },
+  {
+    "id": "B8",
+    "label": "BMS Canteen - Kuteera",
+    "node_type": "BUILDING",
+    "latitude": 13.132891450749677,
+    "longitude": 77.5697737127753
+  },
+  {
+    "id": "B9",
+    "label": "Amphitheatre",
+    "node_type": "BUILDING",
+    "latitude": 13.133420782790914,
+    "longitude": 77.56691948523738
+  },
+  {
+    "id": "G1",
+    "label": "BMSSA main gate",
+    "node_type": "GATE",
+    "latitude": 13.133980663219717,
+    "longitude": 77.56936144597088
+  },
+  {
+    "id": "G2",
+    "label": "BMSIT main gate",
+    "node_type": "GATE",
+    "latitude": 13.134091675152352,
+    "longitude": 77.56930713124045
+  },
+  {
+    "id": "P1",
+    "label": "Parking A",
+    "node_type": "PARKING",
+    "latitude": 13.134176070025315,
+    "longitude": 77.56888767707458
+  },
+  {
+    "id": "P2",
+    "label": "Parking B",
+    "node_type": "PARKING",
+    "latitude": 13.133693626978834,
+    "longitude": 77.56908648785482
+  }
+]
