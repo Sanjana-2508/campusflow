@@ -1,0 +1,12 @@
+[
+    {
+        "location_id": 6,
+        "location_type": "BUILDING",
+        "location": "ISE Block",
+        "people_count": 40,
+        "capacity": 100,
+        "crowd_level": "LOW",
+        "source": "AI_PREDICTION",
+        "recorded_at": "2026-10-07T21:36:33.375356"
+    }
+]
