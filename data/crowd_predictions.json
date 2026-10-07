@@ -1,0 +1,42 @@
+[
+    {
+        "location_id": 1,
+        "location_type": "BUILDING",
+        "location": "CSE Block",
+        "people_count": 78,
+        "capacity": 100,
+        "crowd_level": "HIGH",
+        "source": "AI_PREDICTION",
+        "recorded_at": "2026-10-07T21:10:38.791326"
+    },
+    {
+        "location_id": 2,
+        "location_type": "BUILDING",
+        "location": "Library",
+        "people_count": 119,
+        "capacity": 150,
+        "crowd_level": "HIGH",
+        "source": "AI_PREDICTION",
+        "recorded_at": "2026-10-07T21:10:38.805418"
+    },
+    {
+        "location_id": 3,
+        "location_type": "BUILDING",
+        "location": "Cafeteria",
+        "people_count": 96,
+        "capacity": 120,
+        "crowd_level": "HIGH",
+        "source": "AI_PREDICTION",
+        "recorded_at": "2026-10-07T21:10:38.811528"
+    },
+    {
+        "location_id": 4,
+        "location_type": "BUILDING",
+        "location": "Main Block",
+        "people_count": 164,
+        "capacity": 200,
+        "crowd_level": "HIGH",
+        "source": "AI_PREDICTION",
+        "recorded_at": "2026-10-07T21:10:38.817049"
+    }
+]

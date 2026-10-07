@@ -1,0 +1,10 @@
+{
+    "location_id": 1,
+    "location_type": "BUILDING",
+    "location": "CSE Block",
+    "people_count": 90,
+    "capacity": 100,
+    "crowd_level": "HIGH",
+    "source": "DEMO_CONTROL",
+    "recorded_at": "2026-10-07T21:13:04.981869"
+}
