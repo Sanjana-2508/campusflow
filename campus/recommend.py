@@ -24,7 +24,7 @@ FAKE_HELD = {
     "P2": {"CAR": (3, 1), "TWO_WHEELER": (20, 5)},
 }
 # crowd level for each node
-FAKE_CROWD = {"B1": "HIGH", "B3": "MEDIUM", "P1": "HIGH"}
+FAKE_CROWD = {"P1": "HIGH", "B1": "LOW", "B3": "MEDIUM"}
 
 
 def spaces_available(capacity, staff_reserved, student_held, staff_held, role):
