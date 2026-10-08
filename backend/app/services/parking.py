@@ -4,6 +4,7 @@ from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.db.session import SessionLocal
 from app.models.parking_reservation import ParkingReservation
 from app.models.parking_zone import ParkingZone
 from app.models.user import User
@@ -564,3 +565,32 @@ def complete_reservation(
     db.refresh(reservation)
 
     return reservation
+
+
+def mark_expired_reservations_no_show(db: Session | None = None) -> int:
+    session = db if db is not None else SessionLocal()
+    updated_count = 0
+
+    try:
+        now = _utc_now()
+        expired_reservations = (
+            session.query(ParkingReservation)
+            .filter(ParkingReservation.status == "RESERVED")
+            .all()
+        )
+
+        for reservation in expired_reservations:
+            if now > _ensure_utc(reservation.arrival_deadline):
+                reservation.status = "NO_SHOW"
+                reservation.no_show_at = now
+                updated_count += 1
+
+        session.commit()
+        return updated_count
+
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        if db is None:
+            session.close()
