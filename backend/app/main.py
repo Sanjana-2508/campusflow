@@ -5,6 +5,7 @@ from app.routers.auth import router as auth_router
 from app.routers.buildings import router as buildings_router
 from app.routers.facilities import router as facilities_router
 from app.routers.gates import router as gates_router
+from app.routers.navigation import router as navigation_router
 from app.routers.parking import router as parking_router
 from app.services.parking import mark_expired_reservations_no_show
 
@@ -39,6 +40,7 @@ app.include_router(auth_router)
 app.include_router(buildings_router)
 app.include_router(facilities_router)
 app.include_router(gates_router)
+app.include_router(navigation_router)
 app.include_router(parking_router)
 
 
