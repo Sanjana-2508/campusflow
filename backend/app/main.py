@@ -3,6 +3,7 @@ from fastapi import FastAPI
 
 from app.routers.auth import router as auth_router
 from app.routers.buildings import router as buildings_router
+from app.routers.crowd import router as crowd_router
 from app.routers.facilities import router as facilities_router
 from app.routers.gates import router as gates_router
 from app.routers.navigation import router as navigation_router
@@ -38,6 +39,7 @@ def shutdown_event():
 
 app.include_router(auth_router)
 app.include_router(buildings_router)
+app.include_router(crowd_router)
 app.include_router(facilities_router)
 app.include_router(gates_router)
 app.include_router(navigation_router)
