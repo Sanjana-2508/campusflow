@@ -8,6 +8,7 @@ from app.routers.facilities import router as facilities_router
 from app.routers.gates import router as gates_router
 from app.routers.navigation import router as navigation_router
 from app.routers.parking import router as parking_router
+from app.routers.recommendation import router as recommendation_router
 from app.services.parking import mark_expired_reservations_no_show
 
 scheduler = BackgroundScheduler()
@@ -44,6 +45,7 @@ app.include_router(facilities_router)
 app.include_router(gates_router)
 app.include_router(navigation_router)
 app.include_router(parking_router)
+app.include_router(recommendation_router)
 
 
 @app.get("/")
