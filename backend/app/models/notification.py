@@ -28,6 +28,8 @@ class Notification(Base):
             "EXPIRY_WARNING",
             "NO_SHOW_RELEASED",
             "RESERVATION_CANCELLED",
+            "PARKING_CHECKED_IN",
+            "PARKING_COMPLETED",
             "EVENT_REMINDER",
             "CAMPUS_ANNOUNCEMENT",
             "CROWD_ALERT",

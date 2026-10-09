@@ -7,6 +7,7 @@ from app.routers.crowd import router as crowd_router
 from app.routers.facilities import router as facilities_router
 from app.routers.gates import router as gates_router
 from app.routers.navigation import router as navigation_router
+from app.routers.notifications import router as notifications_router
 from app.routers.parking import router as parking_router
 from app.routers.recommendation import router as recommendation_router
 from app.services.parking import mark_expired_reservations_no_show
@@ -44,6 +45,7 @@ app.include_router(crowd_router)
 app.include_router(facilities_router)
 app.include_router(gates_router)
 app.include_router(navigation_router)
+app.include_router(notifications_router)
 app.include_router(parking_router)
 app.include_router(recommendation_router)
 

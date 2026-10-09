@@ -9,6 +9,7 @@ from app.models.parking_reservation import ParkingReservation
 from app.models.parking_zone import ParkingZone
 from app.models.user import User
 from app.schemas.parking_reservation import ParkingReservationCreate
+from app.services.notifications import create_notification
 
 
 RESERVATION_GRACE_PERIOD_MINUTES = 15
@@ -457,6 +458,16 @@ def create_reservation(
     )
 
     db.add(reservation)
+    db.flush()
+    create_notification(
+        db,
+        user_id=current_user.id,
+        notification_type="RESERVATION_CONFIRMED",
+        title="Parking reservation confirmed",
+        message=f"Your {reservation.vehicle_type.lower().replace('_', ' ')} parking reservation at {parking_zone.name} is confirmed.",
+        related_id=reservation.id,
+        commit=False,
+    )
     db.commit()
     db.refresh(reservation)
 
@@ -489,6 +500,16 @@ def cancel_reservation(
     reservation.status = "CANCELLED"
     reservation.cancelled_at = _utc_now()
 
+    parking_zone = get_parking_zone_or_404(db, reservation.parking_zone_id)
+    create_notification(
+        db,
+        user_id=current_user.id,
+        notification_type="RESERVATION_CANCELLED",
+        title="Parking reservation cancelled",
+        message=f"Your parking reservation at {parking_zone.name} was cancelled.",
+        related_id=reservation.id,
+        commit=False,
+    )
     db.commit()
     db.refresh(reservation)
 
@@ -526,9 +547,22 @@ def check_in_reservation(
             detail="Reservation deadline has passed",
         )
 
+    parking_zone = get_parking_zone_or_404(
+        db,
+        reservation.parking_zone_id,
+    )
     reservation.status = "ACTIVE"
     reservation.checked_in_at = now
 
+    create_notification(
+        db,
+        user_id=current_user.id,
+        notification_type="PARKING_CHECKED_IN",
+        title="Parking check-in successful",
+        message=f"You checked in successfully at {parking_zone.name}.",
+        related_id=reservation.id,
+        commit=False,
+    )
     db.commit()
     db.refresh(reservation)
 
@@ -558,9 +592,22 @@ def complete_reservation(
             detail="Reservation is not active",
         )
 
+    parking_zone = get_parking_zone_or_404(
+        db,
+        reservation.parking_zone_id,
+    )
     reservation.status = "COMPLETED"
     reservation.completed_at = _utc_now()
 
+    create_notification(
+        db,
+        user_id=current_user.id,
+        notification_type="PARKING_COMPLETED",
+        title="Parking session completed",
+        message=f"Your parking session at {parking_zone.name} is complete.",
+        related_id=reservation.id,
+        commit=False,
+    )
     db.commit()
     db.refresh(reservation)
 
@@ -583,6 +630,17 @@ def mark_expired_reservations_no_show(db: Session | None = None) -> int:
             if now > _ensure_utc(reservation.arrival_deadline):
                 reservation.status = "NO_SHOW"
                 reservation.no_show_at = now
+                parking_zone = session.get(ParkingZone, reservation.parking_zone_id)
+                zone_name = parking_zone.name if parking_zone else "your parking zone"
+                create_notification(
+                    session,
+                    user_id=reservation.user_id,
+                    notification_type="NO_SHOW_RELEASED",
+                    title="Parking reservation expired",
+                    message=f"Your reservation at {zone_name} expired without check-in and the space was released.",
+                    related_id=reservation.id,
+                    commit=False,
+                )
                 updated_count += 1
 
         session.commit()
