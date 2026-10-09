@@ -1,8 +1,13 @@
-# Python virtual environment
-.venv/
+# Node.js dependencies
+node_modules/
 
 # Environment variables / secrets
 .env
+.env.*
+
+# Python virtual environments
+.venv/
+venv/
 
 # Python cache
 __pycache__/
@@ -10,6 +15,12 @@ __pycache__/
 
 # Logs
 *.log
+
+# Local databases and generated data
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal/
 
 # IDE
 .vscode/

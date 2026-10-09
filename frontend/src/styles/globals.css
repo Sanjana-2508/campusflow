@@ -1,0 +1,225 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+:root {
+  /* ===== CAMPUSFLOW PALETTE ===== */
+
+  --bg: #121313;
+  --bg-soft: #1b1c1a;
+
+  --surface: #f5f1e8;
+  --surface-soft: #e9e2d4;
+  --surface-dark: #242522;
+
+  --ink: #171817;
+  --ink-light: #f5f1e8;
+  --ink-soft: #4f504a;
+  --muted: #85847b;
+  --muted-light: #aaa99f;
+
+  --line: #d8d1c3;
+  --line-dark: #373934;
+  --line-light: rgba(245, 241, 232, 0.12);
+
+  /* accents */
+  --accent: #c5a46d;
+  --accent-soft: #d9c49c;
+
+  --olive: #6f7654;
+  --olive-dark: #51583c;
+  --olive-light: #a8ae87;
+
+  /* status */
+  --danger: #c96b61;
+  --warning: #c49a52;
+  --success: #6f956d;
+
+  /* radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  /* shadows */
+  --shadow-sm: 0 5px 20px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.12);
+  --shadow-dark: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  font-family: "DM Sans", sans-serif;
+
+  color: var(--ink);
+  background: var(--bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* ===== TYPOGRAPHY ===== */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Manrope", sans-serif;
+  margin-top: 0;
+}
+
+h1 {
+  letter-spacing: -0.045em;
+}
+
+h2 {
+  letter-spacing: -0.035em;
+}
+
+h3 {
+  letter-spacing: -0.02em;
+}
+
+/* ===== LAYOUT ===== */
+
+.container {
+  width: min(1240px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+}
+
+/* ===== PILLS ===== */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 7px 11px;
+
+  border: 1px solid var(--line);
+  border-radius: 999px;
+
+  background: var(--surface);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: var(--success);
+
+  box-shadow: 0 0 0 4px rgba(111, 149, 109, 0.12);
+}
+
+/* ===== ANIMATION ===== */
+
+.page-transition {
+  animation: pageEnter 0.45s ease both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 700px) {
+  .container {
+    width: min(100% - 30px, 1240px);
+  }
+}
+/* CampusFlow — Page-specific colour themes */
+
+:root {
+--dashboard-bg: #EDE9FE;
+--dashboard-accent: #7C3AED;
+
+--campus-map-bg: #DBEAFE;
+--campus-map-accent: #2563EB;
+
+--notifications-bg: #FFEDD5;
+--notifications-accent: #EA580C;
+
+--lostfound-bg: #D1FAE5;
+--lostfound-accent: #059669;
+
+--auth-bg: #FCE7F3;
+--auth-accent: #DB2777;
+}
+
+/* Shared smooth colour transitions */
+body {
+transition: background-color 0.25s ease;
+}
+
+/* Reusable page background themes */
+.theme-dashboard {
+background-color: var(--dashboard-bg);
+}
+
+.theme-campus-map {
+background-color: var(--campus-map-bg);
+}
+
+.theme-notifications {
+background-color: var(--notifications-bg);
+}
+
+.theme-lostfound {
+background-color: var(--lostfound-bg);
+}
+
+.theme-auth {
+background-color: var(--auth-bg);
+}
