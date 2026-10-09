@@ -5,6 +5,11 @@ from pathlib import Path
 CAMPUS = Path(__file__).resolve().parent
 WALKING_SPEED = 75  # metres per minute (from the spec)
 
+# Extra "pretend metres" added when a place is crowded.
+# Tune these during testing (the spec says settings should not be hard-coded for good).
+CROWD_PENALTY_M = {"LOW": 0, "MEDIUM": 20, "HIGH": 80}
+CROWD_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
+
 
 def load_graph():
     with open(CAMPUS / "paths/nodes.json", encoding="utf-8") as f:
@@ -21,43 +26,64 @@ def load_graph():
     return nodes, graph
 
 
-def find_route(start, end):
-    """Shortest walking route between two node IDs, for example find_route("P2", "B7")."""
+def find_route(start, end, crowd=None):
+    """Shortest walking route between two node IDs, for example find_route("P2", "B7").
+
+    crowd is optional: a dict like {"B3": "HIGH", "B5": "LOW"}.
+    If given, crowded places cost extra, so the route avoids them when it can.
+    """
     nodes, graph = load_graph()
+    crowd = crowd or {}
 
     if start not in nodes or end not in nodes:
         return None
 
-    # Each item: (distance so far, current node, route so far)
-    queue = [(0, start, [start])]
+    # Each item: (cost so far, real distance so far, current node, route so far)
+    # "cost" = distance + crowd penalty. It decides which route wins.
+    # "distance" = the real metres we show to the user.
+    queue = [(0, 0, start, [start])]
     visited = set()
 
     while queue:
-        distance, current, route = heapq.heappop(queue)  # takes the shortest one
+        cost, distance, current, route = heapq.heappop(queue)  # cheapest first
         if current in visited:
             continue
         visited.add(current)
 
         if current == end:
-            return {
+            result = {
                 "node_ids": route,
                 "labels": [nodes[n]["label"] for n in route],
                 "coordinates": [[nodes[n]["latitude"], nodes[n]["longitude"]] for n in route],
                 "distance_m": distance,
                 "walk_minutes": round(distance / WALKING_SPEED),
             }
+            # Worst crowd level anywhere on the route (spec rule T7)
+            levels = [crowd[n] for n in route if n in crowd]
+            result["crowd_level"] = (
+                max(levels, key=lambda lv: CROWD_ORDER[lv]) if levels else None
+            )
+            return result
 
         for neighbour, length in graph[current]:
             if neighbour not in visited:
-                heapq.heappush(queue, (distance + length, neighbour, route + [neighbour]))
+                penalty = CROWD_PENALTY_M.get(crowd.get(neighbour), 0)
+                heapq.heappush(
+                    queue,
+                    (cost + length + penalty, distance + length, neighbour, route + [neighbour]),
+                )
 
     return None  # no route found
 
 
 if __name__ == "__main__":
-    result = find_route("P2", "B9")
-    if result is None:
-        print("No route found")
-    else:
-        print(" -> ".join(result["labels"]))
-        print(f"{result['distance_m']} m, about {result['walk_minutes']} min")
+    # 1. Normal route (no crowd info)
+    normal = find_route("P2", "B9")
+    print("Normal :", " -> ".join(normal["labels"]), f"| {normal['distance_m']} m")
+
+    # 2. Same trip, but one place on the route is HIGH crowd
+    # Pick a middle node from the normal route and mark it crowded
+    middle = normal["node_ids"][len(normal["node_ids"]) // 2]
+    smart = find_route("P2", "B9", crowd={middle: "HIGH"})
+    print("Crowd  :", " -> ".join(smart["labels"]), f"| {smart['distance_m']} m",
+          f"| worst crowd: {smart['crowd_level']}")
