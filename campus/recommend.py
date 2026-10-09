@@ -21,8 +21,9 @@ CROWD_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
 # (student_held, staff_held) for each zone and vehicle type
 FAKE_HELD = {
     "P1": {"CAR": (28, 4), "TWO_WHEELER": (5, 1)},
-    "P2": {"CAR": (3, 1), "TWO_WHEELER": (20, 5)},
+    "P2": {"CAR": (16, 2), "TWO_WHEELER": (20, 5)},
 }
+
 # crowd level for each node
 FAKE_CROWD = {"P1": "HIGH", "B1": "LOW", "B3": "MEDIUM"}
 
@@ -107,10 +108,12 @@ def recommend(destination_node, vehicle_type, role, held=FAKE_HELD, crowd=FAKE_C
 
 
 if __name__ == "__main__":
-    result = recommend("B7", "CAR", "FACULTY_STAFF")
-    if result is None:
-        print("No parking available")
-    else:
+    for role in ["STUDENT", "FACULTY_STAFF"]:
+        print(f"--- {role} ---")
+        result = recommend("B7", "CAR", role)
+        if result is None:
+            print("No parking available")
+            continue
         for option in [result["recommended"]] + result["alternatives"]:
             print(f"{option['name']}: score {option['score']} | "
                   f"{option['spaces_available']} spaces | "

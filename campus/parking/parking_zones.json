@@ -1,15 +1,15 @@
 [
   {
     "id": 1, "name": "Parking A",
-    "car_capacity": 50, "bike_capacity": 20,
-    "staff_reserved_car": 20, "staff_reserved_bike": 5,
+    "car_capacity": 40, "bike_capacity": 20,
+    "staff_reserved_car": 8, "staff_reserved_bike": 5,
     "latitude": 13.134176070025315, "longitude": 77.56888767707458,
     "status": "OPEN"
   },
   {
     "id": 2, "name": "Parking B",
-    "car_capacity": 10, "bike_capacity": 70,
-    "staff_reserved_car": 4, "staff_reserved_bike": 30,
+    "car_capacity": 40, "bike_capacity": 70,
+    "staff_reserved_car": 6, "staff_reserved_bike": 30,
     "latitude": 13.133693626978834, "longitude": 77.56908648785482,
     "status": "OPEN"
   }
