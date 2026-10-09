@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.notification import Notification
+from app.services.websocket_manager import websocket_manager
 
 
 def create_notification(
@@ -43,6 +44,7 @@ def create_notification(
     if commit:
         db.commit()
         db.refresh(notification)
+        websocket_manager.publish_notification(notification)
 
     return notification
 

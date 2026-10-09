@@ -10,7 +10,11 @@ from app.routers.navigation import router as navigation_router
 from app.routers.notifications import router as notifications_router
 from app.routers.parking import router as parking_router
 from app.routers.recommendation import router as recommendation_router
-from app.services.parking import mark_expired_reservations_no_show
+from app.routers.websocket import router as websocket_router
+from app.services.parking import (
+    mark_expired_reservations_no_show,
+    process_due_parking_reminders,
+)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(
@@ -18,6 +22,13 @@ scheduler.add_job(
     "interval",
     seconds=60,
     id="parking_no_show_scheduler",
+    replace_existing=True,
+)
+scheduler.add_job(
+    process_due_parking_reminders,
+    "interval",
+    seconds=60,
+    id="parking_reminder_scheduler",
     replace_existing=True,
 )
 
@@ -48,6 +59,7 @@ app.include_router(navigation_router)
 app.include_router(notifications_router)
 app.include_router(parking_router)
 app.include_router(recommendation_router)
+app.include_router(websocket_router)
 
 
 @app.get("/")

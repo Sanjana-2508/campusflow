@@ -5,11 +5,13 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
+from app.models.notification import Notification
 from app.models.parking_reservation import ParkingReservation
 from app.models.parking_zone import ParkingZone
 from app.models.user import User
 from app.schemas.parking_reservation import ParkingReservationCreate
 from app.services.notifications import create_notification
+from app.services.websocket_manager import websocket_manager
 
 
 RESERVATION_GRACE_PERIOD_MINUTES = 15
@@ -459,7 +461,7 @@ def create_reservation(
 
     db.add(reservation)
     db.flush()
-    create_notification(
+    notification = create_notification(
         db,
         user_id=current_user.id,
         notification_type="RESERVATION_CONFIRMED",
@@ -469,6 +471,8 @@ def create_reservation(
         commit=False,
     )
     db.commit()
+    db.refresh(notification)
+    websocket_manager.publish_notification(notification)
     db.refresh(reservation)
 
     return reservation
@@ -501,7 +505,7 @@ def cancel_reservation(
     reservation.cancelled_at = _utc_now()
 
     parking_zone = get_parking_zone_or_404(db, reservation.parking_zone_id)
-    create_notification(
+    notification = create_notification(
         db,
         user_id=current_user.id,
         notification_type="RESERVATION_CANCELLED",
@@ -511,6 +515,8 @@ def cancel_reservation(
         commit=False,
     )
     db.commit()
+    db.refresh(notification)
+    websocket_manager.publish_notification(notification)
     db.refresh(reservation)
 
     return reservation
@@ -554,7 +560,7 @@ def check_in_reservation(
     reservation.status = "ACTIVE"
     reservation.checked_in_at = now
 
-    create_notification(
+    notification = create_notification(
         db,
         user_id=current_user.id,
         notification_type="PARKING_CHECKED_IN",
@@ -564,6 +570,8 @@ def check_in_reservation(
         commit=False,
     )
     db.commit()
+    db.refresh(notification)
+    websocket_manager.publish_notification(notification)
     db.refresh(reservation)
 
     return reservation
@@ -599,7 +607,7 @@ def complete_reservation(
     reservation.status = "COMPLETED"
     reservation.completed_at = _utc_now()
 
-    create_notification(
+    notification = create_notification(
         db,
         user_id=current_user.id,
         notification_type="PARKING_COMPLETED",
@@ -609,6 +617,8 @@ def complete_reservation(
         commit=False,
     )
     db.commit()
+    db.refresh(notification)
+    websocket_manager.publish_notification(notification)
     db.refresh(reservation)
 
     return reservation
@@ -617,6 +627,7 @@ def complete_reservation(
 def mark_expired_reservations_no_show(db: Session | None = None) -> int:
     session = db if db is not None else SessionLocal()
     updated_count = 0
+    notifications = []
 
     try:
         now = _utc_now()
@@ -632,7 +643,7 @@ def mark_expired_reservations_no_show(db: Session | None = None) -> int:
                 reservation.no_show_at = now
                 parking_zone = session.get(ParkingZone, reservation.parking_zone_id)
                 zone_name = parking_zone.name if parking_zone else "your parking zone"
-                create_notification(
+                notification = create_notification(
                     session,
                     user_id=reservation.user_id,
                     notification_type="NO_SHOW_RELEASED",
@@ -641,10 +652,111 @@ def mark_expired_reservations_no_show(db: Session | None = None) -> int:
                     related_id=reservation.id,
                     commit=False,
                 )
+                notifications.append(notification)
                 updated_count += 1
 
         session.commit()
+        for notification in notifications:
+            session.refresh(notification)
+            websocket_manager.publish_notification(notification)
         return updated_count
+
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        if db is None:
+            session.close()
+
+
+def process_due_parking_reminders(
+    db: Session | None = None,
+    now: datetime | None = None,
+) -> int:
+    session = db if db is not None else SessionLocal()
+    created_notifications = []
+    current_time = _ensure_utc(now) if now is not None else _utc_now()
+
+    try:
+        reservations = (
+            session.query(ParkingReservation)
+            .filter(ParkingReservation.status == "RESERVED")
+            .all()
+        )
+
+        for reservation in reservations:
+            requested_arrival = _ensure_utc(
+                reservation.requested_arrival_at
+            )
+            arrival_deadline = _ensure_utc(reservation.arrival_deadline)
+
+            reminder_events = []
+            reminder_time = requested_arrival - timedelta(minutes=15)
+            if reminder_time <= current_time < requested_arrival:
+                reminder_events.append(
+                    (
+                        "RESERVATION_REMINDER",
+                        "Parking reservation reminder",
+                        "Your parking reservation is scheduled to begin in 15 minutes.",
+                    )
+                )
+
+            if requested_arrival <= current_time <= arrival_deadline:
+                reminder_events.append(
+                    (
+                        "ARRIVAL_WINDOW_OPEN",
+                        "Parking arrival window is open",
+                        "Your parking reservation arrival window is now open.",
+                    )
+                )
+
+            warning_time = arrival_deadline - timedelta(minutes=5)
+            if warning_time <= current_time <= arrival_deadline:
+                reminder_events.append(
+                    (
+                        "EXPIRY_WARNING",
+                        "Parking reservation expires soon",
+                        "Your parking reservation will expire in 5 minutes if you do not check in.",
+                    )
+                )
+
+            if not reminder_events:
+                continue
+
+            parking_zone = session.get(ParkingZone, reservation.parking_zone_id)
+            zone_name = parking_zone.name if parking_zone else "your parking zone"
+
+            for notification_type, title, message in reminder_events:
+                existing = (
+                    session.query(Notification.id)
+                    .filter(
+                        Notification.user_id == reservation.user_id,
+                        Notification.type == notification_type,
+                        Notification.related_id == reservation.id,
+                    )
+                    .first()
+                )
+                if existing:
+                    continue
+
+                notification = create_notification(
+                    session,
+                    user_id=reservation.user_id,
+                    notification_type=notification_type,
+                    title=title,
+                    message=f"{message} Location: {zone_name}.",
+                    related_id=reservation.id,
+                    commit=False,
+                )
+                created_notifications.append(notification)
+
+        session.commit()
+
+        for notification in created_notifications:
+            session.refresh(notification)
+            websocket_manager.publish_notification(notification)
+
+        return len(created_notifications)
 
     except Exception:
         session.rollback()
