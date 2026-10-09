@@ -186,6 +186,7 @@ def calculate_available_spaces(
     vehicle_type: str,
     user_role: str,
     requested_at: datetime | None = None,
+    lock_reservations: bool = False,
 ) -> int:
 
     if vehicle_type not in ("CAR", "TWO_WHEELER"):
@@ -217,72 +218,57 @@ def calculate_available_spaces(
         total_capacity = int(parking_zone.bike_capacity)
         staff_reserved = int(parking_zone.staff_reserved_bike)
 
-    if user_role == "STUDENT":
-        usable_capacity = max(
-            total_capacity - staff_reserved,
-            0,
+    reservation_query = (
+        db.query(ParkingReservation, User.role)
+        .join(
+            User,
+            User.id == ParkingReservation.user_id,
         )
-
-        reservations = (
-            db.query(ParkingReservation)
-            .join(
-                User,
-                User.id == ParkingReservation.user_id,
-            )
-            .filter(
-                ParkingReservation.parking_zone_id
-                == parking_zone_id
-            )
-            .filter(
-                ParkingReservation.vehicle_type
-                == vehicle_type
-            )
-            .filter(
-                ParkingReservation.status.in_(
-                    OPEN_RESERVATION_STATUSES
-                )
-            )
-            .filter(User.role == "STUDENT")
-            .all()
+        .filter(
+            ParkingReservation.parking_zone_id == parking_zone_id
         )
-
-    else:
-        usable_capacity = max(
-            total_capacity,
-            0,
+        .filter(ParkingReservation.vehicle_type == vehicle_type)
+        .filter(
+            ParkingReservation.status.in_(
+                OPEN_RESERVATION_STATUSES
+            )
         )
-
-        reservations = (
-            db.query(ParkingReservation)
-            .filter(
-                ParkingReservation.parking_zone_id
-                == parking_zone_id
-            )
-            .filter(
-                ParkingReservation.vehicle_type
-                == vehicle_type
-            )
-            .filter(
-                ParkingReservation.status.in_(
-                    OPEN_RESERVATION_STATUSES
-                )
-            )
-            .all()
-        )
+    )
+    if lock_reservations:
+        reservation_query = reservation_query.with_for_update()
+    reservations = reservation_query.all()
 
     reserved_count = 0
+    student_reserved_count = 0
 
-    for reservation in reservations:
+    for reservation, reservation_user_role in reservations:
         if _reservation_overlaps_requested_window(
             reservation,
             request_time,
             requested_deadline,
         ):
             reserved_count += 1
+            if reservation_user_role == "STUDENT":
+                student_reserved_count += 1
 
-    available = usable_capacity - reserved_count
+    if user_role == "STUDENT":
+        student_capacity = max(total_capacity - staff_reserved, 0)
+        student_spaces_remaining = max(
+            student_capacity - student_reserved_count,
+            0,
+        )
+        total_spaces_remaining = max(
+            total_capacity - reserved_count,
+            0,
+        )
+        available = min(
+            student_spaces_remaining,
+            total_spaces_remaining,
+        )
+    else:
+        available = max(total_capacity - reserved_count, 0)
 
-    return max(available, 0)
+    return available
 
 
 def get_reservation_or_404(
@@ -408,6 +394,19 @@ def create_reservation(
             detail="Staff reserved bike spaces cannot exceed bike capacity",
         )
 
+    locked_user = (
+        db.query(User)
+        .filter(User.id == current_user.id)
+        .with_for_update()
+        .populate_existing()
+        .first()
+    )
+    if locked_user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found",
+        )
+
     open_reservation = (
         db.query(ParkingReservation)
         .filter(
@@ -419,6 +418,7 @@ def create_reservation(
                 OPEN_RESERVATION_STATUSES
             )
         )
+        .with_for_update()
         .first()
     )
 
@@ -432,8 +432,9 @@ def create_reservation(
         db,
         parking_zone.id,
         reservation_data.vehicle_type,
-        current_user.role,
+        locked_user.role,
         requested_at=requested_arrival_at,
+        lock_reservations=True,
     )
 
     if available_spaces <= 0:

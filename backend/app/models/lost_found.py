@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, Enum, ForeignKey
 from sqlalchemy.sql import func
 
 from app.db.base import Base
@@ -11,7 +11,7 @@ class LostFound(Base):
 
     user_id = Column(
         Integer,
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
         nullable=False,
     )
 
@@ -25,7 +25,7 @@ class LostFound(Base):
 
     location = Column(String(200), nullable=True)
 
-    item_date = Column(DateTime, nullable=True)
+    item_date = Column(Date, nullable=True)
 
     image = Column(String(500), nullable=True)
 

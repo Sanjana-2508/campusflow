@@ -1,6 +1,4 @@
 from sqlalchemy import Column, Integer, String, Text, Enum, ForeignKey
-from sqlalchemy.sql import func
-from sqlalchemy import DateTime
 
 from app.db.base import Base
 
@@ -15,7 +13,7 @@ class Club(Base):
 
     owner_user_id = Column(
         Integer,
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
 
@@ -23,10 +21,4 @@ class Club(Base):
         Enum("PENDING", "APPROVED", "REJECTED"),
         nullable=False,
         default="PENDING",
-    )
-
-    created_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.current_timestamp(),
     )

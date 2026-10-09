@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, Text, Date, Time, Enum, ForeignKey
 
 from app.db.base import Base
 
@@ -14,13 +13,13 @@ class Event(Base):
 
     organizer_user_id = Column(
         Integer,
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="RESTRICT", onupdate="CASCADE"),
         nullable=False,
     )
 
     club_id = Column(
         Integer,
-        ForeignKey("clubs.id"),
+        ForeignKey("clubs.id", ondelete="SET NULL", onupdate="CASCADE"),
         nullable=True,
     )
 
@@ -28,17 +27,17 @@ class Event(Base):
 
     venue_building_id = Column(
         Integer,
-        ForeignKey("buildings.id"),
+        ForeignKey("buildings.id", ondelete="SET NULL", onupdate="CASCADE"),
         nullable=True,
     )
 
-    event_date = Column(DateTime, nullable=False)
-    start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
+    event_date = Column(Date, nullable=False)
+    start_time = Column(Time, nullable=False)
+    end_time = Column(Time, nullable=False)
 
     poster = Column(String(500), nullable=True)
     registration_url = Column(String(500), nullable=True)
-    qr = Column(String(500), nullable=True)
+    qr_code = Column(String(500), nullable=True)
 
     expected_attendance = Column(Integer, nullable=True)
 
@@ -46,10 +45,4 @@ class Event(Base):
         Enum("DRAFT", "PUBLISHED", "CANCELLED", "REMOVED"),
         nullable=False,
         default="DRAFT",
-    )
-
-    created_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.current_timestamp(),
     )

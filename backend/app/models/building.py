@@ -9,7 +9,7 @@ class Building(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     name = Column(String(150), nullable=False)
-    type = Column(String(50), nullable=True)
+    type = Column(String(50), nullable=False)
 
     lat = Column(DECIMAL(10, 7), nullable=False)
     lng = Column(DECIMAL(10, 7), nullable=False)
